@@ -38,6 +38,9 @@ function fire() {
 
 	var option = $('#gameMode :selected').val();
 	switch (option) {
+		case 'tamil':
+			sessionData = tamilmoviesdata.slice(0);
+			break;
 		case 'spanish':
 			sessionData = spanishData.slice(0);
 			break;
