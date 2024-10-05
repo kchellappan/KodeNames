@@ -27,11 +27,43 @@ $("#gameMode").change(function() {
 	fire();
 });
 
+async function fetchDataAndReturnValue(user_prompt) {
+    try {
+        // Perform the fetch request and wait for the response
+        const response = 
+			await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyBr0mH3brDW-hetFbXqCJ1ESMTtxOk-SwM", {
+				method: "POST",
+				body: JSON.stringify({
+					"contents": [{"parts": [{"text": user_prompt + ". Just a comma separated list."}]}]
+				}),
+				headers: {
+					"Content-type": "application/json; charset=UTF-8"
+				}
+			});
+        
+        // Wait for the response to be converted to JSON (or text, depending on the format)
+        const data = await response.json(); // Use .text() if the response is not JSON
+
+		// Now data is available here synchronously
+		// Split the data
+		console.log(data);
+		customData = data.candidates[0].content.parts[0].text.split(', ');
+		console.log("Words to be used...", customData);
+        
+        // Return the data (the function will pause until this point)
+        return customData;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        // Optionally, you can return a default value or handle the error as needed
+        return null;
+    }
+}
+
 
 $("#seed").val(Math.floor(Math.random() * 1000));
 fire();
 
-function fire() {
+async function fire() {
 	//get seed and set the seed for randomizer
 	var seed = document.getElementById("seed").value;
 	Math.seedrandom(seed.toLowerCase());
@@ -52,14 +84,15 @@ function fire() {
 			break;
 		case 'custom':
 			if (customData.length === 0) {
-				var customWordList = prompt("Please enter custom word list. The list will be saved until your refresh your browser. (The words MUST be delimanted by spaces). eg: cat dog mouse", "Enter words here");
-				customData = customWordList.split(' ');
+				var user_prompt = prompt("Please prompt Gemini for words", "Enter prompt here");
+                sessionData = await fetchDataAndReturnValue(user_prompt + ". Just a comma separated list."); // Wait for the fetch to complete
 			}
-			sessionData = customData.slice(0);
 			break;
 		default:
 			sessionData = defaultData.slice(0);
 	}
+
+	console.log("sessionData: ", sessionData);
 
 	wordsSelected = [];
 	teams = [];
